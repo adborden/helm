@@ -1,0 +1,111 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "wallabag.fullname" . }}
+  labels:
+    {{- include "wallabag.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "wallabag.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "wallabag.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "wallabag.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: SYMFONY__ENV__DATABASE_DRIVER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "wallabag.fullname" . }}
+                  key: databaseDriver
+            - name: SYMFONY__ENV__DATABASE_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "wallabag.fullname" . }}
+                  key: databaseHost
+            - name: SYMFONY__ENV__DATABASE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "wallabag.fullname" . }}
+                  key: databaseName
+            - name: SYMFONY__ENV__DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "wallabag.fullname" . }}
+                  key: databasePassword
+            - name: SYMFONY__ENV__DATABASE_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "wallabag.fullname" . }}
+                  key: databasePort
+            - name: SYMFONY__ENV__DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "wallabag.fullname" . }}
+                  key: databaseUser
+            - name: SYMFONY__ENV__FOSUSER_CONFIMRATION
+              value: "false"
+            - name: SYMFONY__ENV__FOSUSER_REGISTRATION
+              value: "false"
+            - name: SYMFONY__ENV__FROM_EMAIL
+              value: test@test.com
+            - name: SYMFONY__ENV__MAILER_HOST
+              value: 127.0.0.1
+            - name: SYMFONY__ENV__MAILER_PASSWORD
+              value: "~"
+            - name: SYMFONY__ENV__MAILER_USER
+              value: "~"
+            - name: SYMFONY__ENV__DOMAIN_NAME
+              value: {{ .Values.wallabag.domainName }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /api/version.json
+              port: http
+            initialDelaySeconds: 120
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/version.json
+              port: http
+            initialDelaySeconds: 120
+            timeoutSeconds: 10
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      restartPolicy: Always
