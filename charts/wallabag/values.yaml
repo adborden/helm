@@ -3,7 +3,15 @@
 # Declare variables to be passed into your templates.
 
 wallabag:
-  domainName: https://your-wallabag-url.com
+  domainName: https://wallabag.example.com
+  fosUserConfirmation: false
+  fosUserRegistration: false
+  email:
+    enabled: false
+    fromEmail: wallabag@example.com
+    host: 127.0.0.1
+    password: "~"
+    user: "~"
   database:
     create: true
     driver: sqlite
@@ -12,17 +20,42 @@ wallabag:
     user: wallabag
     port: 5432
     password: wallabag
+  importWorkers:
+    enabled: false
+    # Apply resources to all import workers
+    resources: {}
+    wallabag_v1:
+      enabled: false
+      # resouces: {}
+    wallabag_v2:
+      enabled: false
+      # resouces: {}
 
-postgres:
+postgresql:
   enabled: false
 
+redis:
+  enabled: false
+  replica:
+    replicaCount: 0
+
+  master:
+    persistence:
+      enabled: false
+
+
 replicaCount: 1
+podDisruptionBudget:
+  enabled: false
+  spec:
+    minAvailable: 1
+  #maxUnavailable: "50%"
+
 
 image:
   repository: wallabag/wallabag
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
 
 imagePullSecrets: []
 nameOverride: ""
@@ -53,6 +86,7 @@ securityContext: {}
 service:
   type: NodePort
   port: 8080
+  annotations: {}
 
 ingress:
   enabled: false

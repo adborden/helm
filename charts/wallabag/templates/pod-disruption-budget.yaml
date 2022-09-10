@@ -1,0 +1,16 @@
+{{- if .Values.podDisruptionBudget.enabled -}}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "wallabag.fullname" . }}
+  labels:
+    {{- include "wallabag.labels" . | nindent 4 }}
+spec:
+  {{- with .Values.podDisruptionBudget.spec }}
+  {{ toYaml . | nindent 2 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "wallabag.selectorLabels" . | nindent 6 }}
+{{- end }}

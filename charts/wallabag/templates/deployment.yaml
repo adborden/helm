@@ -1,0 +1,172 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "wallabag.fullname" . }}
+  labels:
+    {{- include "wallabag.labels" . | nindent 4 }}
+    app.kubernetes.io/component: app
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "wallabag.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: app
+  template:
+    metadata:
+      annotations:
+        {{- if .Values.podAnnotations }}
+        {{- toYaml .Values.podAnnotations | nindent 8 }}
+        {{- end }}
+        checksum/config: {{ include "wallabag.configChecksum" . }}
+      labels:
+        {{- include "wallabag.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: app
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "wallabag.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: {{ .Chart.Name }}-db-migration
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - migrate
+          env:
+          envFrom:
+            - configMapRef:
+                name: {{ include "wallabag.fullname" . }}
+            - secretRef:
+                name: {{ include "wallabag.fullname" . }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          envFrom:
+            - configMapRef:
+                name: {{ include "wallabag.fullname" . }}
+            - secretRef:
+                name: {{ include "wallabag.fullname" . }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /api/info.json
+              port: http
+            timeoutSeconds: 10
+          startupProbe:
+            httpGet:
+              path: /api/info.json
+              port: http
+            failureThreshold: 30
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/info.json
+              port: http
+            timeoutSeconds: 10
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      restartPolicy: Always
+{{- if .Values.wallabag.importWorkers.enabled }}
+{{- range $key, $value := .Values.wallabag.importWorkers.workers }}
+{{- if $value.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ printf "%s-import-%s" (include "wallabag.fullname" .) $key }}
+  labels:
+    {{- include "wallabag.labels" . | nindent 4 }}
+    app.kubernetes.io/component: import-workers
+    app.kubernetes.io/instance: {{ $key }}
+spec:
+  replicas: {{ $value.replicaCount | default .Values.wallabag.importWorkers.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "wallabag.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: import-workers
+      app.kubernetes.io/instance: {{ $key }}
+  template:
+    metadata:
+      annotations:
+        {{- if .Values.podAnnotations }}
+        {{- toYaml .Values.podAnnotations | nindent 8 }}
+        {{- end }}
+        checksum/config: {{ include "wallabag.configChecksum" . }}
+      labels:
+        {{- include "wallabag.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: import-workers
+        app.kubernetes.io/instance: {{ $key }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "wallabag.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}-import-{{ $key }}
+          command:
+          args:
+            - import
+            - {{ $key }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          envFrom:
+            - configMapRef:
+                name: {{ include "wallabag.fullname" . }}
+            - secretRef:
+                name: {{ include "wallabag.fullname" . }}
+          {{- $importResources := $value.resources | default .Values.wallabag.importWorkers.resources | default .Values.resources }}
+          {{- if $importResources }}
+          resources:
+            {{- toYaml $importResources | nindent 12 }}
+          {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      restartPolicy: Always
+{{- end }}
+{{- end }}
+{{- end }}

@@ -35,6 +35,9 @@ Common labels
 */}}
 {{- define "wallabag.labels" -}}
 helm.sh/chart: {{ include "wallabag.chart" . }}
+{{- range $key, $val := .Values.wallabag.labels }}
+{{ $key }}: {{ $val | quote }}
+{{- end }}
 {{ include "wallabag.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
@@ -59,4 +62,13 @@ Create the name of the service account to use
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
+{{- end }}
+
+
+
+{{/*
+Create the name of the service account to use
+*/}}
+{{- define "wallabag.configChecksum" -}}
+{{- printf "%s-%s" (include (print $.Template.BasePath "/configmap.yaml") .) (include (print $.Template.BasePath "/secret.yaml") .) | sha256sum }}
 {{- end }}
