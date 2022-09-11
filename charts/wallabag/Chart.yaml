@@ -1,7 +1,20 @@
 apiVersion: v2
 name: wallabag
-description: A Helm chart for Kubernetes
+description: Wallabag read-it-later service
+home: https://wallabag.org/
 icon: https://raw.githubusercontent.com/wallabag/wallabag/master/web/img/logo-square.svg
+kubeVersion: ">= 1.20.0 < 1.24.0"
+keywords:
+  - pocket
+  - read-it-later
+  - wallabag
+sources:
+  - https://github.com/wallabag/wallabag
+  - https://github.com/adborden/helm
+maintainers:
+  - name: adborden
+    email: adborden@a14n.net
+    url: https://a14n.net
 
 # A chart can be either an 'application' or a 'library' chart.
 #
