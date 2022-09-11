@@ -49,7 +49,7 @@ podDisruptionBudget:
   enabled: false
   spec:
     minAvailable: 1
-  #maxUnavailable: "50%"
+  # maxUnavailable: "50%"
 
 
 image:
