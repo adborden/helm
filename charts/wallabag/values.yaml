@@ -3,35 +3,49 @@
 # Declare variables to be passed into your templates.
 
 wallabag:
-  domainName: https://wallabag.example.com
+  domainName: http://localhost:8080
   fosUserConfirmation: false
   fosUserRegistration: false
+  secret:
+    create: true
+    name: ""
   email:
     enabled: false
     fromEmail: wallabag@example.com
     host: 127.0.0.1
     password: "~"
-    user: "~"
+    username: "~"
   database:
-    create: true
+    # -- The database driver. One of `sqlite` or `postgresql`.
     driver: sqlite
-    name: wallabag
+    # -- The database host.
     host: wallabag
-    user: wallabag
-    port: 5432
+    # -- The database name.
+    name: wallabag
+    # -- The database port.
+    port: ""
+    # -- The database password.
     password: wallabag
+    # -- The database username.
+    username: wallabag
   importWorkers:
+    # -- Enable import workers for importing backups and data.
     enabled: false
-    # Apply resources to all import workers
+    # -- Apply resources to all import workers
     resources: {}
     wallabag_v1:
+      # -- Enable the wallabag_v1 importer.
       enabled: false
       # resouces: {}
     wallabag_v2:
+      # -- Enable the wallabag_v2 importer.
       enabled: false
       # resouces: {}
+  # -- Symfony secret for cryptographic seed. This should be a randomly generated string. Leave blank for a random value.
+  wallabagSecret: ""
 
 postgresql:
+  # -- Enable installation of postgresql subchart. See [bitnami/postgresql](https://github.com/bitnami/charts/tree/main/bitnami/postgresql/)
   enabled: false
 
 redis:
@@ -49,13 +63,13 @@ podDisruptionBudget:
   enabled: false
   spec:
     minAvailable: 1
-  # maxUnavailable: "50%"
-
 
 image:
   repository: wallabag/wallabag
   pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
+  # -- Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
 
 imagePullSecrets: []
 nameOverride: ""
