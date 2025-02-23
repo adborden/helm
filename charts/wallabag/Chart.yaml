@@ -40,7 +40,7 @@ appVersion: "2.4.2"
 
 dependencies:
   - name: common
-    version: ~2.13.3
+    version: ~2.27.0
     repository: https://charts.bitnami.com/bitnami
   - name: postgresql
     version: ~11.8.1
