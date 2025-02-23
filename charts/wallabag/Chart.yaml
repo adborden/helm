@@ -4,7 +4,7 @@ name: wallabag
 description: Wallabag read-it-later service
 home: https://wallabag.org/
 icon: https://raw.githubusercontent.com/wallabag/wallabag/master/web/img/logo-square.svg
-kubeVersion: "1.20 - 1.30"
+kubeVersion: "1.20 - 1.32"
 keywords:
   - pocket
   - read-it-later
