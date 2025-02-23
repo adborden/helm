@@ -9,3 +9,15 @@ data:
   SYMFONY__ENV__FOSUSER_CONFIRMATION: {{ .Values.wallabag.fosUserConfirmation | toString | quote }}
   SYMFONY__ENV__FOSUSER_REGISTRATION: {{ .Values.wallabag.fosUserRegistration | toString | quote }}
   SYMFONY__ENV__DOMAIN_NAME: {{ .Values.wallabag.domainName }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "wallabag.fullname" . }}-php
+  labels:
+    {{- include "wallabag.labels" . | nindent 4 }}
+data:
+{{- range $key, $value := .Values.wallabag.phpConfigs }}
+  {{ $key }}: |-
+{{ $value | indent 4 }}
+{{- end }}

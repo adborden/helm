@@ -60,6 +60,12 @@ spec:
                 name: {{ include "wallabag.fullname" . }}
             - secretRef:
                 name: {{ include "wallabag.fullname" . }}
+          volumeMounts:
+            {{- range $key, $value := .Values.wallabag.phpConfigs }}
+            - name: {{ template "wallabag.fullname" $ }}-php
+              mountPath: {{ printf "/etc/php-fpm.d/%s" $key | quote }}
+              subPath: {{ $key }}
+            {{- end }}
           ports:
             - name: http
               containerPort: 80
@@ -95,6 +101,12 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       restartPolicy: Always
+      volumes:
+        {{- if .Values.wallabag.phpConfigs }}
+        - name: {{ template "wallabag.fullname" . }}-php
+          configMap:
+            name: {{ template "wallabag.fullname" . }}-php
+        {{- end }}
 {{- if .Values.wallabag.importWorkers.enabled }}
 {{- range $key, $value := .Values.wallabag.importWorkers.workers }}
 {{- if $value.enabled }}
@@ -167,6 +179,12 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       restartPolicy: Always
+      volumes:
+        {{- if .Values.wallabag.phpConfigs }}
+        - name: {{ template "wallabag.fullname" . }}-php
+          configMap:
+            name: {{ template "wallabag.fullname" . }}-phpconfig
+        {{- end }}
 {{- end }}
 {{- end }}
 {{- end }}
