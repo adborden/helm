@@ -41,13 +41,13 @@ spec:
           args:
             - migrate
           env:
+            {{- include "wallabag.containerEnv" . | nindent 12 }}
           envFrom:
             - configMapRef:
                 name: {{ include "wallabag.fullname" . }}
-            - secretRef:
-                name: {{ include "wallabag.fullname" . }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          workingDir: /var/www/wallabag
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -55,10 +55,9 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
+            {{- include "wallabag.containerEnv" . | nindent 12 }}
           envFrom:
             - configMapRef:
-                name: {{ include "wallabag.fullname" . }}
-            - secretRef:
                 name: {{ include "wallabag.fullname" . }}
           volumeMounts:
             {{- range $key, $value := .Values.wallabag.phpConfigs }}
@@ -88,6 +87,7 @@ spec:
             timeoutSeconds: 10
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          workingDir: /var/www/wallabag
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -156,16 +156,16 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
+            {{- include "wallabag.containerEnv" . | nindent 12 }}
           envFrom:
             - configMapRef:
-                name: {{ include "wallabag.fullname" . }}
-            - secretRef:
                 name: {{ include "wallabag.fullname" . }}
           {{- $importResources := $value.resources | default .Values.wallabag.importWorkers.resources | default .Values.resources }}
           {{- if $importResources }}
           resources:
             {{- toYaml $importResources | nindent 12 }}
           {{- end }}
+          workingDir: /var/www/wallabag
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

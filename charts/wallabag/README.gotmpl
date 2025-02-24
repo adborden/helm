@@ -1,0 +1,78 @@
+{{ template "chart.header" . }}
+{{ template "chart.deprecationWarning" . }}
+
+{{ template "chart.badgesSection" . }}
+
+{{ template "chart.description" . }}
+
+{{ template "chart.homepageLine" . }}
+
+{{ template "chart.maintainersSection" . }}
+
+{{ template "chart.sourcesSection" . }}
+
+{{ template "chart.requirementsSection" . }}
+
+## Administration
+
+You can run the `console` to administer the instance.
+
+    $ kubectl exec -it deploy/wallabag -- bin/console list
+
+
+## Database
+
+You have some options for using a database:
+
+- postgresql
+- mariadb (not yet supported)
+- external database
+
+
+### Postgresql
+
+See [examples/postgresql](./examples/postgresql.yaml).
+
+
+### External database
+
+See [examples/postgresql](./examples/postgresql.yaml).
+
+
+## Secrets
+
+You can provide your own existing secret by specifying:
+
+```yaml
+wallabag:
+  secret:
+    create: false
+    named: my-existing-secret
+```
+
+Your existing secret should contain these keys:
+
+Key | Required | Description
+--- | -------- | -----------
+email-from-email | No | Required when `wallabag.email.enabled`. From address for sending email.
+email-mailer-host | No | Required when `wallabag.email.enabled`. Hostname to send email.
+email-mailer-password | No | Required when `wallabag.email.enabled`. Password for the mailer host to send email.
+email-mailer-username | No | Required when `wallabag.email.enabled`. Username for the mailer host to send email.
+database-name | No | Required when `wallabag.database.driver` is not `sqlite`. Database name when using a non-sqlite database.
+database-password | No | Required when `wallabag.database.driver` is not `sqlite`. Database password when using a non-sqlite database.
+database-username | No | Required when `wallabag.database.driver` is not `sqlite`. Database username when using a non-sqlite database.
+database-host | No | Required when `wallabag.database.driver` is not `sqlite`. Database hostname when using a non-sqlite database.
+database-port | No | Required when `wallabag.database.driver` is not `sqlite`. Database hostname when using a non-sqlite database.
+redis-password | No | Required when `redis.enabled`. Redis password for import workers.
+redis-host | No | Required when `redis.enabled`. Redis hostname for import workers.
+wallabag-secret | Yes | Random secret for seeding cryptographic functions in Symfony.
+
+
+You can generate a `wallabag-secret` with:
+
+    pwgen -n -s 32 1
+
+
+{{ template "chart.valuesSection" . }}
+
+{{ template "helm-docs.versionFooter" . }}

@@ -1,0 +1,14 @@
+---
+wallabag:
+  database:
+    driver: postgresql
+    name: wallabag
+    password: qBvgPMDuDitM9hecwebMYPm8HsZbS4K3
+    username: wallabag
+
+postgresql:
+  enabled: true
+  auth:
+    database: wallabag
+    password: qBvgPMDuDitM9hecwebMYPm8HsZbS4K3
+    username: wallabag
