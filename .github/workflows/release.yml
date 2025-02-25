@@ -41,6 +41,9 @@ jobs:
         run: |
           helm repo add bitnami https://charts.bitnami.com/bitnami
 
+      - name: Update docs
+        uses: losisin/helm-docs-github-action@v1
+
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.7.0
         with:
