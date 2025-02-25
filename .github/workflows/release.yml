@@ -5,14 +5,12 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - 'README.md'
-      - 'charts/**/README.md'
-      - 'LICENSE'
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,7 +20,7 @@ jobs:
       - name: Turnstyle
         uses: softprops/turnstyle@v2
         with:
-          continue-after-seconds: 180
+          continue-after-seconds: 300
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
 
@@ -30,6 +28,26 @@ jobs:
         run: |
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "lts/*"
+
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@v2
+        id: semantic  # Need an `id` for output variables
+        with:
+          semantic_version: 17
+          extends: |
+            semantic-release-monorepo
+          extra_plugins: |
+            @semantic-release/changelog@5
+            @semantic-release/commit-analyzer
+            @semantic-release/exec@5
+            @semantic-release/git@9
+            @semantic-release/release-notes-generator
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # See https://github.com/helm/chart-releaser-action/issues/6
       - name: Set up Helm
@@ -42,6 +60,7 @@ jobs:
           helm repo add bitnami https://charts.bitnami.com/bitnami
 
       - name: Run chart-releaser
+        if: steps.semantic.outputs.new_release_published == 'true'
         uses: helm/chart-releaser-action@v1.7.0
         with:
           charts_repo_url: https://adborden.github.io/charts
